@@ -28,8 +28,9 @@ RUN groupadd --gid "${GID}" steam \
 
 RUN curl -fsSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz -o /tmp/steamcmd.tar.gz \
     && tar -xzf /tmp/steamcmd.tar.gz -C /opt/steamcmd \
-    && mkdir -p /home/steam/.steam/sdk32 \
+    && mkdir -p /home/steam/.steam/sdk32 /home/steam/.steam/sdk64 \
     && ln -sf /opt/steamcmd/linux32/steamclient.so /home/steam/.steam/sdk32/steamclient.so \
+    && ln -sf /opt/steamcmd/linux64/steamclient.so /home/steam/.steam/sdk64/steamclient.so \
     && rm -f /tmp/steamcmd.tar.gz \
     && chown -R steam:steam /opt/steamcmd /home/steam/.steam
 

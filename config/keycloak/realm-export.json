@@ -1,0 +1,25 @@
+{
+  "realm": "holdfast-admin",
+  "enabled": true,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": true,
+  "clients": [
+    {
+      "clientId": "holdfast-admin",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "replace-me",
+      "redirectUris": [
+        "http://holdfast-admin.local/oauth2/callback"
+      ],
+      "webOrigins": [
+        "http://holdfast-admin.local"
+      ],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+  "users": []
+}

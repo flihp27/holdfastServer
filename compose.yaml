@@ -1,0 +1,44 @@
+services:
+  holdfast:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        UID: "${PUID:-1000}"
+        GID: "${PGID:-1000}"
+    image: "${HOLDFAST_IMAGE:-holdfast-server-local:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-holdfast}-server"
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      TZ: "${TZ:-UTC}"
+      SERVER_PORT: "${SERVER_PORT:-20100}"
+      STEAM_COMMUNICATIONS_PORT: "${STEAM_COMMUNICATIONS_PORT:-8700}"
+      STEAM_QUERY_PORT: "${STEAM_QUERY_PORT:-27000}"
+      HOLDFAST_CONFIG_PATH: /data/config/serverconfig_custom.txt
+      HOLDFAST_INSTALL_DIR: /opt/holdfast/server
+      STEAMCMD_VALIDATE: "${STEAMCMD_VALIDATE:-false}"
+    ports:
+      - "${SERVER_PORT:-20100}:${SERVER_PORT:-20100}/udp"
+      - "${STEAM_COMMUNICATIONS_PORT:-8700}:${STEAM_COMMUNICATIONS_PORT:-8700}/udp"
+      - "${STEAM_QUERY_PORT:-27000}:${STEAM_QUERY_PORT:-27000}/udp"
+    volumes:
+      - ./state/holdfast-server:/opt/holdfast/server
+      - ./state:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 512
+    mem_limit: 8g
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s

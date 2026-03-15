@@ -1,0 +1,99 @@
+services:
+  admin-ui:
+    image: filebrowser/filebrowser:v2.32.0
+    container_name: "${COMPOSE_PROJECT_NAME:-holdfast}-admin-ui"
+    restart: unless-stopped
+    user: "${PUID:-1000}:${PGID:-1000}"
+    environment:
+      FB_NOAUTH: "true"
+    command:
+      - "--address=0.0.0.0"
+      - "--port=8080"
+      - "--root=/srv"
+      - "--database=/tmp/filebrowser.db"
+    volumes:
+      - ./state:/srv/state:ro
+    networks:
+      - admin
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.holdfast-admin.rule=Host(`${ADMIN_HOSTNAME:-holdfast-admin.local}`)"
+      - "traefik.http.routers.holdfast-admin.entrypoints=web"
+      - "traefik.http.routers.holdfast-admin.middlewares=oauth-auth@docker"
+      - "traefik.http.services.holdfast-admin.loadbalancer.server.port=8080"
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0
+    container_name: "${COMPOSE_PROJECT_NAME:-holdfast}-oauth2-proxy"
+    restart: unless-stopped
+    env_file:
+      - .env
+    command:
+      - "--http-address=0.0.0.0:4180"
+      - "--provider=keycloak-oidc"
+      - "--redirect-url=http://${ADMIN_HOSTNAME:-holdfast-admin.local}/oauth2/callback"
+      - "--oidc-issuer-url=http://keycloak:8080/realms/holdfast-admin"
+      - "--client-id=${OIDC_CLIENT_ID}"
+      - "--client-secret=${OIDC_CLIENT_SECRET}"
+      - "--cookie-secret=${OIDC_COOKIE_SECRET}"
+      - "--email-domain=*"
+      - "--scope=openid profile email"
+      - "--set-xauthrequest=true"
+      - "--skip-provider-button=true"
+      - "--upstream=file:///dev/null"
+    depends_on:
+      - keycloak
+    networks:
+      - admin
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.oauth2.rule=Host(`${ADMIN_HOSTNAME:-holdfast-admin.local}`) && PathPrefix(`/oauth2`)"
+      - "traefik.http.routers.oauth2.entrypoints=web"
+      - "traefik.http.services.oauth2.loadbalancer.server.port=4180"
+      - "traefik.http.middlewares.oauth-auth.forwardauth.address=http://oauth2-proxy:4180/oauth2/auth"
+      - "traefik.http.middlewares.oauth-auth.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.oauth-auth.forwardauth.authResponseHeaders=X-Auth-Request-User,X-Auth-Request-Email,Authorization"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    container_name: "${COMPOSE_PROJECT_NAME:-holdfast}-keycloak"
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_BOOTSTRAP_ADMIN_USERNAME: "${KEYCLOAK_ADMIN}"
+      KC_BOOTSTRAP_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD}"
+    command:
+      - start-dev
+      - --http-port=8080
+      - --import-realm
+    volumes:
+      - ./config/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    networks:
+      - admin
+
+  traefik:
+    image: traefik:v3.5
+    container_name: "${COMPOSE_PROJECT_NAME:-holdfast}-traefik"
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=false"
+      - "--log.level=INFO"
+    ports:
+      - "${ADMIN_BIND_ADDRESS:-127.0.0.1}:80:80/tcp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - oauth2-proxy
+      - admin-ui
+    networks:
+      - admin
+
+networks:
+  admin:
+    name: "${COMPOSE_PROJECT_NAME:-holdfast}-admin"

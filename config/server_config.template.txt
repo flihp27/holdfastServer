@@ -18,6 +18,7 @@ friendly_fire {{FRIENDLY_FIRE}}
 friendly_fire_melee_bounce {{FRIENDLY_FIRE_MELEE_BOUNCE}}
 damage_split {{DAMAGE_SPLIT}}
 
+!map_rotation start
 map_name Westmillbrook
 game_mode ArmyBattlefield
 round_time_minutes {{ROUND_TIME_MINUTES}}
@@ -32,7 +33,9 @@ wave_spawn_time_seconds {{WAVE_SPAWN_TIME_SECONDS}}
 wave_spawn_vehicle_time_seconds {{WAVE_SPAWN_VEHICLE_TIME_SECONDS}}
 wave_spawn_dynamic_time_seconds {{WAVE_SPAWN_DYNAMIC_TIME_SECONDS}}
 spawn_immunity_timer {{SPAWN_IMMUNITY_TIMER}}
+!map_rotation end
 
+!map_rotation start
 map_name PinefieldMarsh
 game_mode ArmyBattlefield
 round_time_minutes {{ROUND_TIME_MINUTES}}
@@ -47,7 +50,9 @@ wave_spawn_time_seconds {{WAVE_SPAWN_TIME_SECONDS}}
 wave_spawn_vehicle_time_seconds {{WAVE_SPAWN_VEHICLE_TIME_SECONDS}}
 wave_spawn_dynamic_time_seconds {{WAVE_SPAWN_DYNAMIC_TIME_SECONDS}}
 spawn_immunity_timer {{SPAWN_IMMUNITY_TIMER}}
+!map_rotation end
 
+!map_rotation start
 map_name VanoiseHeights
 game_mode ArmyBattlefield
 round_time_minutes {{ROUND_TIME_MINUTES}}
@@ -62,3 +67,5 @@ wave_spawn_time_seconds {{WAVE_SPAWN_TIME_SECONDS}}
 wave_spawn_vehicle_time_seconds {{WAVE_SPAWN_VEHICLE_TIME_SECONDS}}
 wave_spawn_dynamic_time_seconds {{WAVE_SPAWN_DYNAMIC_TIME_SECONDS}}
 spawn_immunity_timer {{SPAWN_IMMUNITY_TIMER}}
+!map_rotation end
+

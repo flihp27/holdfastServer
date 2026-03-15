@@ -148,7 +148,8 @@ EOF
   run_install_script
   assert_log_contains "compose -f ${ROOT_DIR}/compose.yaml build holdfast"
   assert_log_contains "compose -f ${ROOT_DIR}/compose.yaml up -d holdfast"
-  assert_file_contains "${ROOT_DIR}/state/config/serverconfig_custom.txt" "server_name [EU] 42nd Regiment Linebattle"
+  assert_file_contains "${ROOT_DIR}/state/config/serverconfig_custom.txt" "server_name [NA] Quebec Regiment Local"
+  assert_file_contains "${ROOT_DIR}/state/config/serverconfig_custom.txt" "!map_rotation start"
   assert_file_contains "${ROOT_DIR}/state/config/serverconfig_custom.txt" "map_name Westmillbrook"
 }
 

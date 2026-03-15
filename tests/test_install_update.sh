@@ -33,6 +33,8 @@ write_state() {
 CONTAINER_EXISTS=${CONTAINER_EXISTS}
 CURRENT_IMAGE_ID=${CURRENT_IMAGE_ID}
 BUILT_IMAGE_ID=${BUILT_IMAGE_ID}
+CONTAINER_STATUS=${CONTAINER_STATUS}
+HEALTH_STATUS=${HEALTH_STATUS}
 STATE
 }
 
@@ -49,7 +51,24 @@ if [ "${1:-}" = "ps" ]; then
 fi
 
 if [ "${1:-}" = "inspect" ]; then
-  printf '%s\n' "${CURRENT_IMAGE_ID:-sha256:old}"
+  if [ "${2:-}" = "--format" ]; then
+    case "${3:-}" in
+      "{{.Image}}")
+        printf '%s\n' "${CURRENT_IMAGE_ID:-sha256:old}"
+        ;;
+      "{{.State.Status}}")
+        printf '%s\n' "${CONTAINER_STATUS:-running}"
+        ;;
+      "{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}")
+        printf '%s\n' "${HEALTH_STATUS:-healthy}"
+        ;;
+      *)
+        printf '%s\n' "${CURRENT_IMAGE_ID:-sha256:old}"
+        ;;
+    esac
+  else
+    printf '%s\n' "${CURRENT_IMAGE_ID:-sha256:old}"
+  fi
   exit 0
 fi
 
@@ -72,9 +91,21 @@ if [ "${1:-}" = "compose" ]; then
     up)
       CONTAINER_EXISTS=true
       CURRENT_IMAGE_ID="${BUILT_IMAGE_ID:-sha256:new}"
+      CONTAINER_STATUS=running
+      HEALTH_STATUS=healthy
       write_state
       ;;
-    stop|start|run)
+    stop)
+      CONTAINER_STATUS=exited
+      HEALTH_STATUS=starting
+      write_state
+      ;;
+    start)
+      CONTAINER_STATUS=running
+      HEALTH_STATUS=healthy
+      write_state
+      ;;
+    run)
       write_state
       ;;
   esac
@@ -144,6 +175,8 @@ test_first_install_creates_container() {
 CONTAINER_EXISTS=false
 CURRENT_IMAGE_ID=sha256:old
 BUILT_IMAGE_ID=sha256:new
+CONTAINER_STATUS=created
+HEALTH_STATUS=starting
 EOF
   run_install_script
   assert_log_contains "compose -f ${ROOT_DIR}/compose.yaml build holdfast"
@@ -162,6 +195,8 @@ test_update_restarts_without_recreate_when_hash_and_image_match() {
 CONTAINER_EXISTS=true
 CURRENT_IMAGE_ID=sha256:new
 BUILT_IMAGE_ID=sha256:new
+CONTAINER_STATUS=running
+HEALTH_STATUS=healthy
 EOF
   run_install_script
   assert_log_contains "compose -f ${ROOT_DIR}/compose.yaml stop holdfast"
@@ -178,6 +213,8 @@ test_update_recreates_when_image_changes() {
 CONTAINER_EXISTS=true
 CURRENT_IMAGE_ID=sha256:old
 BUILT_IMAGE_ID=sha256:new
+CONTAINER_STATUS=running
+HEALTH_STATUS=healthy
 EOF
   run_install_script
   assert_log_contains "compose -f ${ROOT_DIR}/compose.yaml up -d holdfast"

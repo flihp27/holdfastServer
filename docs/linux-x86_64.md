@@ -18,7 +18,7 @@ Guide de deploiement du serveur Holdfast sur une machine virtuelle locale, un no
 
 ## Paquets a installer
 
-Debian 12 / Ubuntu :
+Debian 12+ / Ubuntu :
 
 ```bash
 sudo apt-get update
@@ -80,6 +80,8 @@ Ce flux :
 - telecharge ou met a jour le serveur dedie via SteamCMD dans le conteneur
 - cree le conteneur s'il n'existe pas
 - sinon ne le recree que si l'image ou la configuration ont change
+- attend que le conteneur atteigne un etat `healthy`
+- affiche un resume post-deploiement avec l'etat Docker, le healthcheck et le dernier signal runtime utile
 
 ## Verification
 

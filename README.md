@@ -36,6 +36,7 @@ Le script :
 - crée le conteneur s'il n'existe pas
 - sinon ne le recrée que si l'image ou la configuration ont changé
 - sinon fait une mise à jour idempotente sans recréation
+- attend ensuite un état `healthy` et affiche un résumé de santé lisible
 
 ## Ports exposés
 
@@ -103,6 +104,20 @@ Ce guide est celui à suivre pour une future utilisation sur un PC Windows 11 vi
 ```bash
 bash tests/test_install_update.sh
 ```
+
+## Vérification post-déploiement
+
+Le healthcheck Docker ne se limite plus à vérifier que le processus existe :
+
+- il échoue sur des erreurs critiques observées en pratique comme `Unable to initialize Steam`
+- il attend un signal runtime utile comme `Loading Round ID` ou `Finished loading map`
+
+Le script `scripts/install-update.sh` attend cet état de santé et affiche ensuite :
+
+- l'état Docker du conteneur
+- l'état du healthcheck
+- le dernier signal runtime utile
+- la dernière erreur critique si une est détectée
 
 ## Références techniques
 
